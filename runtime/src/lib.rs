@@ -28,6 +28,9 @@ use sp_version::NativeVersion;
 // A few exports that help ease life for downstream crates.
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
+/*** Add This Line ***/
+/// Importing the contracts Schedule type.
+pub use contracts::Schedule as ContractsSchedule;
 pub use timestamp::Call as TimestampCall;
 pub use balances::Call as BalancesCall;
 pub use sp_runtime::{Permill, Perbill};
@@ -103,6 +106,17 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	apis: RUNTIME_API_VERSIONS,
 	transaction_version: 1,
 };
+
+
+// These time units are defined in number of blocks.
+   /* --snip-- */
+
+/*** Add This Block ***/
+// Contracts price units.
+pub const MILLICENTS: Balance = 1_000_000_000;
+pub const CENTS: Balance = 1_000 * MILLICENTS;
+pub const DOLLARS: Balance = 100 * CENTS;
+/*** End Added Block ***/
 
 pub const MILLISECS_PER_BLOCK: u64 = 6000;
 
@@ -214,6 +228,39 @@ parameter_types! {
 	pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
 }
 
+
+
+impl timestamp::Trait for Runtime {
+    /* --snip-- */
+}
+
+/*** Add This Block ***/
+parameter_types! {
+    pub const TombstoneDeposit: Balance = 1 * DOLLARS;
+    pub const RentByteFee: Balance = 1 * DOLLARS;
+    pub const RentDepositOffset: Balance = 1000 * DOLLARS;
+    pub const SurchargeReward: Balance = 150 * DOLLARS;
+}
+
+impl contracts::Trait for Runtime {
+    type Time = Timestamp;
+    type Randomness = RandomnessCollectiveFlip;
+    type Call = Call;
+    type Event = Event;
+    type DetermineContractAddress = contracts::SimpleAddressDeterminer<Runtime>;
+    type TrieIdGenerator = contracts::TrieIdFromParentCounter<Runtime>;
+    type RentPayment = ();
+    type SignedClaimHandicap = contracts::DefaultSignedClaimHandicap;
+    type TombstoneDeposit = TombstoneDeposit;
+    type StorageSizeOffset = contracts::DefaultStorageSizeOffset;
+    type RentByteFee = RentByteFee;
+    type RentDepositOffset = RentDepositOffset;
+    type SurchargeReward = SurchargeReward;
+    type MaxDepth = contracts::DefaultMaxDepth;
+    type MaxValueSize = contracts::DefaultMaxValueSize;
+}
+/*** End Added Block ***/
+
 impl timestamp::Trait for Runtime {
 	/// A timestamp: milliseconds since the unix epoch.
 	type Moment = u64;
@@ -271,6 +318,8 @@ construct_runtime!(
 		Balances: balances::{Module, Call, Storage, Config<T>, Event<T>},
 		TransactionPayment: transaction_payment::{Module, Storage},
 		Sudo: sudo::{Module, Call, Config<T>, Storage, Event<T>},
+        /*** Add This Line ***/
+        Contracts: contracts::{Module, Call, Config, Storage, Event<T>},
 		// Used for the module template in `./template.rs`
 		TemplateModule: template::{Module, Call, Storage, Event<T>},
 	}
