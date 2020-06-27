@@ -230,9 +230,7 @@ parameter_types! {
 
 
 
-impl timestamp::Trait for Runtime {
-    /* --snip-- */
-}
+
 
 /*** Add This Block ***/
 parameter_types! {
