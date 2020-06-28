@@ -27,6 +27,7 @@ native_executor_instance!(
 /// be able to perform chain operations.
 macro_rules! new_full_start {
 	($config:expr) => {{
+		use jsonrpc_core::IoHandler;
 		use std::sync::Arc;
 		use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
 
